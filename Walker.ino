@@ -26,15 +26,49 @@ void setup() {
   pwmController.setPWMFrequency(50); // Default is 200Hz, supports 24Hz to 1526Hz
 }
 
+class Maps {
+  //servo direction {-    +    -   +   -    +   -    + }
+  word trot[8][8]={ {-45, 20, -45, 20, -45, -45, 45, 45},
+                    {-45, 20, -45, 20, 45, 45, -45, -45},
+                    {-20, 45, -20, 45, 45, 45, -45, -45},
+                    {-20, 45, -20, 45, 45, 45, -45, -45},
+                    {-45, 20, -45, 20, -45, -45, 45, 45},
+                    {-45, 20, -45, 20, 45, 45, -45, -45},
+                    {-20, 45, -20, 45, 45, 45, -45, -45},
+                    {-20, 45, -20, 45, 45, 45, -45, -45}
+                  };
+  //TODO: Rotation(turn), Strafe, crawl, walk
+}
+
 //LIMITS!! 102-500
 class Walk {
   int walkSpeed=0; //inverse - lower is faster
   int turnSpeed=0;
   int strafeSpeed=0;
-  int minDelay=150;
+  int minDelay=75;
   int minPWMLimit=102;
   int maxPWMLimit=500;
 
+public:
+  void Go() {
+    //determine walk level (crawl, walk, or trot)
+    step legs[8];
+    //influence the result for turning here
+    legs[0]=trot0();
+    legs[1]=trot1();
+    legs[2]=trot2();
+    legs[3]=trot3();
+    legs[4]=trot0();
+    legs[5]=trot1();
+    legs[6]=trot2();
+    legs[7]=trot3();
+    for (int x=0; x<4; x++) {
+      delay(minDelay+(walkSpeed * 50));
+      send(legs[x]);
+    }
+  }
+
+private:
   void send(step legs) {
     word servo[8]={legs.leg1, legs.leg2, legs.leg3, legs.leg4, legs.hip1, legs.hip2, legs.hip3, legs.hip4};
     delay(minDelay+(walkSpeed * 50));
@@ -95,21 +129,6 @@ class Walk {
     srv.hip3=pwmServo1.pwmForAngle(45);
     srv.hip4=pwmServo1.pwmForAngle(45);
     return srv;
-  }
-
-public:
-  void Go() {
-    //determine walk level (crawl, walk, or trot)
-    step legs[4];
-    //influence the result for turning here
-    legs[0]=trot0();
-    legs[1]=trot1();
-    legs[2]=trot2();
-    legs[3]=trot3();
-    for (int x=0; x<4; x++) {
-      delay(minDelay+(walkSpeed * 50));
-      send(legs[x]);
-    }
   }
 };
 
