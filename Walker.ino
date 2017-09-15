@@ -74,31 +74,31 @@ const int8_t leftstrafemap[8][8] = {
                   {-45, 20, -45, 20, 45, -45, -45, 45},
                   {-45, 20, -45, 20, -45, 45, 45, -45}
                 };
-const int8_t rightrotatemap[8][8] = {
+const int8_t leftrotatemap[8][8] = {
 //servo direction {-    +    -   +   -    +   -    + }
 //servo desig     {ft1, ft2, ft3, ft4, hp1, hp2, hp3, hp4}
                 //{-45, 20, -45, 20, -45, 45, 45, -45}, //fd,fu,sd,su
-                  {-20, 45, -20, 45, -45, 45, -45, 45},//swap
-                  {-20, 45, -20, 45, 45, -45, 45, -45},//turn
-                  {-45, 20, -45, 20, 45, -45, 45, -45},//swap
-                  {-45, 20, -45, 20, -45, 45, -45, 45},//turn
-                  {-20, 45, -20, 45, -45, 45, -45, 45},//swap
-                  {-20, 45, -20, 45, 45, -45, 45, -45},//turn
-                  {-45, 20, -45, 20, 45, -45, 45, -45},//swap
-                  {-45, 20, -45, 20, -45, 45, -45, 45}//turn
+                  {-45, 45, -45, 45, 45, 45, 45, 45},//plant
+                  {-45, 45, -45, 45, -45, -45, -45, -45}, //rotate
+                  {-20, 45, -20, 45, -45, -45, -45, -45}, //pick up odds
+                  {-20, 45, -20, 45, 45, -45, 45, -45}, //adjust odd
+                  {-45, 20, -45, 20, 45, -45, 45, -45}, //pick up evens
+                  {-45, 20, -45, 20, 45, 45, 45, 45}, //adjust even
+                  {-45, 45, -45, 45, 45, 45, 45, 45},//plant
+                  {-45, 45, -45, 45, 45, 45, 45, 45}//plant
                 };
-const int8_t leftrotatemap[8][8] = {
+const int8_t rightrotatemap[8][8] = {
 //servo direction {-    +    -   +   -    +   -    + }
 //servo desig     {ft1, ft2, ft3, ft4, hp1, hp2, hp3, hp4}
                 //{-45, 20, -45, 20, -45, 45, 45, -45}, //fd,fu,sd,su
                   {-45, 45, -45, 45, -45, -45, -45, -45},//plant
                   {-45, 45, -45, 45, 45, 45, 45, 45}, //rotate
                   {-20, 45, -20, 45, 45, 45, 45, 45}, //pick up odds
-                  {-45, 20, -45, 20, -45, 45, -45, 45}, //adjust odd
-                  {-20, 45, -20, 45, -45, 45, -45, 45}, //pick up evens
-                  {-20, 45, -20, 45, -45, -45, -45, -45}, //adjust even
+                  {-20, 45, -20, 45, -45, 45, -45, 45}, //adjust odd
+                  {-45, 20, -45, 20, -45, 45, -45, 45}, //pick up evens
+                  {-45, 20, -45, 20, -45, -45, -45, -45}, //adjust even
                   {-45, 45, -45, 45, -45, -45, -45, -45},//plant
-                  {-45, 45, -45, 45, -45, -45, -45, -45}//plant
+                  {-45, 45, -45, 45,- 45, -45, -45, -45}//plant
                 };
 
 //LIMITS!! 102-500
@@ -114,7 +114,7 @@ public:
   uint8_t Go(int8_t step) {
     //determine walk level (crawl, walk, or trot)
     int8_t legs[8][8];
-    memcpy(legs, trotmap, sizeof(int8_t)*64);
+    memcpy(legs, leftrotatemap, sizeof(int8_t)*64);
     delay(minDelay+(walkSpeed * 50));
 #ifdef DEBUG
     Serial.print("sending next set dhurr: ");
