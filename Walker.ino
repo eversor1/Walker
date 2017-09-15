@@ -1,8 +1,12 @@
 #include <Wire.h>
 #include "PCA9685.h"
 
+#define OPERATE_SERVOS 1
+
 PCA9685 pwmController;                  // Library using default Wire and default linear phase balancing scheme
 PCA9685_ServoEvaluator pwmServo1;
+
+int step=0;
 
 void setup() {
   Serial.begin(115200);
@@ -10,9 +14,11 @@ void setup() {
   Wire.begin();                       // Wire must be started first
   Wire.setClock(400000);              // Supported baud rates are 100kHz, 400kHz, and 1000kHz
 
-  //pwmController.resetDevices();       // Software resets all PCA9685 devices on Wire line
-  //pwmController.init(B000000);        // Address pins A5-A0 set to B010101
-  //pwmController.setPWMFrequency(50); // Default is 200Hz, supports 24Hz to 1526Hz
+#ifdef OPERATE_SERVOS
+  pwmController.resetDevices();       // Software resets all PCA9685 devices on Wire line
+  pwmController.init(B000000);        // Address pins A5-A0 set to B010101
+  pwmController.setPWMFrequency(50); // Default is 200Hz, supports 24Hz to 1526Hz
+#endif
 }
 
 class Maps {
@@ -22,11 +28,74 @@ public:
                     {-45, 20, -45, 20, -45, -45, 45, 45},
                     {-45, 20, -45, 20, 45, 45, -45, -45},
                     {-20, 45, -20, 45, 45, 45, -45, -45},
-                    {-20, 45, -20, 45, 45, 45, -45, -45},
+                    {-20, 45, -20, 45, -45, -45, 45, 45},
                     {-45, 20, -45, 20, -45, -45, 45, 45},
                     {-45, 20, -45, 20, 45, 45, -45, -45},
                     {-20, 45, -20, 45, 45, 45, -45, -45},
-                    {-20, 45, -20, 45, 45, 45, -45, -45}
+                    {-20, 45, -20, 45, -45, -45, 45, 45}
+                  };
+
+  const **backtrotmap[8][8] = {
+                    {-20, 45, -20, 45, -45, -45, 45, 45},
+                    {-20, 45, -20, 45, 45, 45, -45, -45},
+                    {-45, 20, -45, 20, 45, 45, -45, -45},
+                    {-45, 20, -45, 20, -45, -45, 45, 45},
+                    {-20, 45, -20, 45, -45, -45, 45, 45},
+                    {-20, 45, -20, 45, 45, 45, -45, -45},
+                    {-45, 20, -45, 20, 45, 45, -45, -45},
+                    {-45, 20, -45, 20, -45, -45, 45, 45},
+                  };
+
+  const **rightstrafemap[8][8] = {
+  //servo direction {-    +    -   +   -    +   -    + }
+  //servo desig     {ft1, ft2, ft3, ft4, hp1, hp2, hp3, hp4}
+                    {-45, 20, -45, 20, -45, 45, 45, -45}, //fd,fu,sd,su
+                    {-45, 20, -45, 20, 45, -45, -45, 45},
+                    {-20, 45, -20, 45, 45, -45, -45, 45},
+                    {-20, 45, -20, 45, -45, 45, 45, -45},
+                    {-45, 20, -45, 20, -45, 45, 45, -45},
+                    {-45, 20, -45, 20, 45, -45, -45, 45},
+                    {-20, 45, -20, 45, 45, -45, -45, 45},
+                    {-20, 45, -20, 45, -45, 45, 45, -45},
+                  };
+
+const **leftstrafemap[8][8] = {
+  //servo direction {-    +    -   +   -    +   -    + }
+  //servo desig     {ft1, ft2, ft3, ft4, hp1, hp2, hp3, hp4}
+                    {-20, 45, -20, 45, -45, 45, 45, -45},
+                    {-20, 45, -20, 45, 45, -45, -45, 45},
+                    {-45, 20, -45, 20, 45, -45, -45, 45},
+                    {-45, 20, -45, 20, -45, 45, 45, -45},
+                    {-20, 45, -20, 45, -45, 45, 45, -45},
+                    {-20, 45, -20, 45, 45, -45, -45, 45},
+                    {-45, 20, -45, 20, 45, -45, -45, 45},
+                    {-45, 20, -45, 20, -45, 45, 45, -45},
+                  };
+const **rightrotatemap[8][8] = { //fixme
+  //servo direction {-    +    -   +   -    +   -    + }
+  //servo desig     {ft1, ft2, ft3, ft4, hp1, hp2, hp3, hp4}
+                  //{-45, 20, -45, 20, -45, 45, 45, -45}, //fd,fu,sd,su
+                    {-20, 45, -20, 45, -45, 45, -45, 45},//swap
+                    {-20, 45, -20, 45, 45, -45, 45, -45},//turn
+                    {-45, 20, -45, 20, 45, -45, 45, -45},//swap
+                    {-45, 20, -45, 20, -45, 45, -45, 45},//turn
+                    {-20, 45, -20, 45, -45, 45, -45, 45},//swap
+                    {-20, 45, -20, 45, 45, -45, 45, -45},//turn
+                    {-45, 20, -45, 20, 45, -45, 45, -45},//swap
+                    {-45, 20, -45, 20, -45, 45, -45, 45},//turn
+                  };
+const **leftrotatemap[8][8] = {
+  //servo direction {-    +    -   +   -    +   -    + }
+  //servo desig     {ft1, ft2, ft3, ft4, hp1, hp2, hp3, hp4}
+                  //{-45, 20, -45, 20, -45, 45, 45, -45}, //fd,fu,sd,su
+                    {-45, 45, -45, 45, -45, -45, -45, -45},//plant
+                    {-45, 45, -45, 45, 45, 45, 45, 45}, //rotate
+                    {-20, 45, -20, 45, 45, 45, 45, 45}, //pick up odds
+                    {-45, 20, -45, 20, -45, 45, -45, 45}, //adjust odd
+                    {-20, 45, -20, 45, -45, 45, -45, 45}, //pick up evens
+                    {-20, 45, -20, 45, -45, -45, -45, -45}, //adjust even
+                    {-45, 45, -45, 45, -45, -45, -45, -45},//plant
+                    {-45, 45, -45, 45, -45, -45, -45, -45},//plant
                   };
                   /*
   const **trotmap[8][8] = {
@@ -44,6 +113,21 @@ public:
   int trot() {
     return trotmap;
   }
+  int backtrot() {
+    return backtrotmap;
+  }
+  int rightstrafe() {
+    return rightstrafemap;
+  }
+  int leftstrafe() {
+    return leftstrafemap;
+  }
+  int rightrotate() {
+    return rightrotatemap;
+  }
+  int leftrotate() {
+    return leftrotatemap;
+  }
   //TODO: Rotation(turn), Strafe, crawl, walk
 };
 
@@ -59,15 +143,21 @@ class Walk {
   int maxPWMLimit=500;
 
 public:
-  void Go() {
+  int Go(int step) {
     //determine walk level (crawl, walk, or trot)
     int* legs=walkMap->trot();
-    for (int x=0; x<64; x += 8) {
+    //for (int x=0; x<64; x += 8) {
       delay(minDelay+(walkSpeed * 50));
       Serial.print("sending next set: ");
-      Serial.println(x);
-      send(&legs[x]);
+      Serial.println(step);
+      send(&legs[step]);
+    //};
+    //add something to check the current map length, and reset on that
+    step=step+8;
+    if (step > 63) {
+      step=0;
     };
+    return step;
   }
 
 private:
@@ -86,12 +176,14 @@ private:
     };
     Serial.println("");
     delay(minDelay+(walkSpeed * 50));
-    //pwmController.setChannelsPWM(0,8,sending);
+#ifdef OPERATE_SERVOS
+    pwmController.setChannelsPWM(0,8,sending);
+#endif
   }
 };
 
 Walk *Walker = new Walk(); //instantiate object
 
 void loop() {
-  Walker->Go();
+  step=Walker->Go(step);
 }
