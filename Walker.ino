@@ -1,15 +1,17 @@
 #include <Wire.h>
 #include "PCA9685.h"
 
-#define OPERATE_SERVOS 1
+//#define OPERATE_SERVOS 1
 
 PCA9685 pwmController;                  // Library using default Wire and default linear phase balancing scheme
 PCA9685_ServoEvaluator pwmServo1;
 
-int step=0;
+int step = 0;
+int led = 13;
 
 void setup() {
   Serial.begin(115200);
+  Serial.println("Begin");
 
   Wire.begin();                       // Wire must be started first
   Wire.setClock(400000);              // Supported baud rates are 100kHz, 400kHz, and 1000kHz
@@ -43,7 +45,7 @@ public:
                     {-20, 45, -20, 45, -45, -45, 45, 45},
                     {-20, 45, -20, 45, 45, 45, -45, -45},
                     {-45, 20, -45, 20, 45, 45, -45, -45},
-                    {-45, 20, -45, 20, -45, -45, 45, 45},
+                    {-45, 20, -45, 20, -45, -45, 45, 45}
                   };
 
   const **rightstrafemap[8][8] = {
@@ -56,7 +58,7 @@ public:
                     {-45, 20, -45, 20, -45, 45, 45, -45},
                     {-45, 20, -45, 20, 45, -45, -45, 45},
                     {-20, 45, -20, 45, 45, -45, -45, 45},
-                    {-20, 45, -20, 45, -45, 45, 45, -45},
+                    {-20, 45, -20, 45, -45, 45, 45, -45}
                   };
 
 const **leftstrafemap[8][8] = {
@@ -69,7 +71,7 @@ const **leftstrafemap[8][8] = {
                     {-20, 45, -20, 45, -45, 45, 45, -45},
                     {-20, 45, -20, 45, 45, -45, -45, 45},
                     {-45, 20, -45, 20, 45, -45, -45, 45},
-                    {-45, 20, -45, 20, -45, 45, 45, -45},
+                    {-45, 20, -45, 20, -45, 45, 45, -45}
                   };
 const **rightrotatemap[8][8] = { //fixme
   //servo direction {-    +    -   +   -    +   -    + }
@@ -82,7 +84,7 @@ const **rightrotatemap[8][8] = { //fixme
                     {-20, 45, -20, 45, -45, 45, -45, 45},//swap
                     {-20, 45, -20, 45, 45, -45, 45, -45},//turn
                     {-45, 20, -45, 20, 45, -45, 45, -45},//swap
-                    {-45, 20, -45, 20, -45, 45, -45, 45},//turn
+                    {-45, 20, -45, 20, -45, 45, -45, 45}//turn
                   };
 const **leftrotatemap[8][8] = {
   //servo direction {-    +    -   +   -    +   -    + }
@@ -95,21 +97,8 @@ const **leftrotatemap[8][8] = {
                     {-20, 45, -20, 45, -45, 45, -45, 45}, //pick up evens
                     {-20, 45, -20, 45, -45, -45, -45, -45}, //adjust even
                     {-45, 45, -45, 45, -45, -45, -45, -45},//plant
-                    {-45, 45, -45, 45, -45, -45, -45, -45},//plant
+                    {-45, 45, -45, 45, -45, -45, -45, -45}//plant
                   };
-                  /*
-  const **trotmap[8][8] = {
-                          {1,2,3,4,5,6,7,8},
-                          {9,10,11,12,13,14,15,16},
-                          {17,18,19,20,21,22,23,24},
-                          {25,26,27,28,29,30,31,32},
-                          {33,34,35,36,37,38,39,40},
-                          {41,42,43,44,45,46,47,48},
-                          {49,50,51,52,53,54,55,56},
-                          {57,58,59,60,61,62,63,64}
-                        };
-                        */
-
   int trot() {
     return trotmap;
   }
@@ -146,17 +135,21 @@ public:
   int Go(int step) {
     //determine walk level (crawl, walk, or trot)
     int* legs=walkMap->trot();
-    //for (int x=0; x<64; x += 8) {
-      delay(minDelay+(walkSpeed * 50));
-      Serial.print("sending next set: ");
-      Serial.println(step);
-      send(&legs[step]);
-    //};
+    delay(minDelay+(walkSpeed * 50));
+    Serial.print("sending next set: ");
+    Serial.println(step);
+    send(&legs[step]);
+
     //add something to check the current map length, and reset on that
     step=step+8;
     if (step > 63) {
       step=0;
     };
+    if (((step/8)%2) == 0) {
+      digitalWrite(led, HIGH);
+    } else {
+      digitalWrite(led, LOW);
+    }
     return step;
   }
 
@@ -185,5 +178,6 @@ private:
 Walk *Walker = new Walk(); //instantiate object
 
 void loop() {
+  Serial.println(step);
   step=Walker->Go(step);
 }
