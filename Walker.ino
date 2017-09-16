@@ -3,7 +3,7 @@
 
 //#define OPERATE_SERVOS 1
 #define SERVO_DEBUG 1
-#define RCV_DEBUG 1
+//#define RCV_DEBUG 1
 
 PCA9685 pwmController;                  // Library using default Wire and default linear phase balancing scheme
 PCA9685_ServoEvaluator pwmServo1;
@@ -13,6 +13,11 @@ uint8_t led = 13;
 volatile uint8_t prev; // remembers state of input bits from previous interrupt
 volatile uint32_t risingEdge[6]; // time of last rising edge for each channel
 volatile uint32_t uSec[6]; // the latest measured pulse width for each channel
+
+struct aryPack {
+    uint8_t size;
+    int8_t* aryPtr;
+};
 
 ISR(PCINT2_vect) { // one or more of pins 2~7 have changed state
   //chans: 2:meh, 3: hovpit, 4: left stick horiz, 5: right stk vert, 6: throt, 7: right stk horiz
@@ -24,8 +29,8 @@ ISR(PCINT2_vect) { // one or more of pins 2~7 have changed state
     if (changed & mask) { // this pin has changed state
       if (curr & mask) { // +ve edge so remember time
         risingEdge[channel] = now;
-      }
-      else { // -ve edge so store pulse width
+      } else { // -ve edge so store pulse width
+        //TODO: Maybe average this with it's previous value to even it out?
         uSec[channel] = now - risingEdge[channel];
       }
     }
@@ -35,10 +40,10 @@ ISR(PCINT2_vect) { // one or more of pins 2~7 have changed state
 }
 
 void setup() {
-#if defined(SERVO_DEBUG) || defined(RCV_DEBUG)
+//#if defined(SERVO_DEBUG) || defined(RCV_DEBUG)
   Serial.begin(115200);
   Serial.println("Begin");
-#endif
+//#endif
 
   Wire.begin();                       // Wire must be started first
   Wire.setClock(400000);              // Supported baud rates are 100kHz, 400kHz, and 1000kHz
@@ -138,12 +143,57 @@ class Walk {
   int8_t maxPWMLimit=500;
   int8_t numSteps = 0;
 
+  uint16_t forwardThreshold = 2000;
+  uint16_t reverseThreshold = 1600;
+  uint16_t strafeLeftThreshold = 1600;
+  uint16_t strafeRightThreshold = 2000;
+
 public:
+  aryPack selectMotion() {
+    aryPack motion;
+
+    motion.size=0;
+    if (uSec[4] == 0) { //controller not active or init
+      return motion;
+    }
+
+    if (uSec[4] > forwardThreshold) { //forward throttle
+      motion.size = (sizeof(trotmap)/(sizeof(int8_t)*8));
+      motion.aryPtr = *trotmap;
+      Serial.println("Moving Forward!");
+    } else if (uSec[4] < reverseThreshold) { //backward throttle
+      motion.size = (sizeof(backtrotmap)/(sizeof(int8_t)*8));
+      motion.aryPtr = *backtrotmap;
+      Serial.println("Backing Up - BEEP!");
+    };
+
+    if (uSec[2] > strafeRightThreshold) {
+      motion.size = (sizeof(rightstrafemap)/(sizeof(int8_t)*8));
+      motion.aryPtr = *rightstrafemap;
+      Serial.println("Strafe RIGHT");
+    } else if (uSec[2] < strafeLeftThreshold) {
+      motion.size = (sizeof(leftstrafemap)/(sizeof(int8_t)*8));
+      motion.aryPtr = *leftstrafemap;
+      Serial.println("Strafe LEFT");
+    };
+
+    return motion;
+  }
+
   uint8_t Go(int8_t step) {
-    //determine walk level (crawl, walk, or trot)
-    int8_t numSteps = (sizeof(leftrotatemap)/(sizeof(int8_t)*8));
-    int8_t legs[8][numSteps];
-    memcpy(legs, leftrotatemap, numSteps*8);
+    //chans: 2:meh, 3: hovpit, 4: left stick horiz, 5: right stk vert, 6: throt, 7: right stk horiz
+    aryPack motion = selectMotion();
+
+    if (motion.size == 0) { //nothing to do
+      return 0;
+    }
+    int8_t numSteps = motion.size;
+    int8_t legs[numSteps][8];
+    memcpy(legs, motion.aryPtr, numSteps*8);
+
+    Serial.println(numSteps);
+
+    //TODO: update delay to move slower instead of jerking
     delay(minDelay+(walkSpeed * 50));
 #ifdef SERVO_DEBUG
     Serial.print("Sending next set: ");
@@ -160,8 +210,6 @@ public:
     Serial.println(numSteps);
 #endif
     send(legs[step]);
-
-    //add something to check the current map length, and reset on that
     step++;
     if (step > (numSteps-1)) {
       step=0;
