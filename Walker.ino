@@ -2,8 +2,8 @@
 #include "PCA9685.h"
 
 #define OPERATE_SERVOS 1
-#define SERVO_DEBUG 1
-//#define RCV_DEBUG 1
+//#define SERVO_DEBUG 1
+#define RCV_DEBUG 1
 
 PCA9685 pwmController;                  // Library using default Wire and default linear phase balancing scheme
 PCA9685_ServoEvaluator pwmServo1;
@@ -136,19 +136,26 @@ const int8_t rightrotatemap[6][8] = {
 
 //LIMITS!! 102-500
 class Walk {
-  int8_t walkSpeed=4; //inverse - lower is faster
-  int8_t turnSpeed=0;
-  int8_t strafeSpeed=0;
-  int8_t minDelay=150;
+  int8_t speed=7; //inverse - lower is faster
+  int8_t numSpeeds=6;
+  int8_t speedDelay=75;
+  int8_t minDelay=75;
+
   int8_t minPWMLimit=102;
   int8_t maxPWMLimit=500;
   int8_t numSteps = 0;
 
   //chans: 2:meh, 3: hovpit, 4: left stick horiz, 5: right stk vert, 6: throt, 7: right stk horiz
-  uint16_t forwardThreshold = 1700;
-  uint16_t reverseThreshold = 1400;
-  uint16_t strafeLeftThreshold = 1400;
-  uint16_t strafeRightThreshold = 1700;
+  //range: 1050 - 1920ish
+  //6 speeds
+  uint16_t upperLimit = 1930;
+  uint16_t lowerLimit = 980;
+  uint16_t forwardThreshold = 1550;
+  uint16_t reverseThreshold = 1450;
+  uint16_t strafeLeftThreshold = 1450;
+  uint16_t strafeRightThreshold = 1550;
+  uint16_t rotateLeftThreshold = 1450;
+  uint16_t rotateRightThreshold = 1550;
 
 public:
   aryPack selectMotion() {
@@ -159,29 +166,51 @@ public:
       return motion;
     }
 
-    if (uSec[4] > forwardThreshold) { //forward throttle
-      motion.size = (sizeof(trotmap)/(sizeof(int8_t)*8));
-      motion.aryPtr = *trotmap;
-      Serial.println("Moving Forward!");
-    } else if (uSec[4] < reverseThreshold) { //backward throttle
-      motion.size = (sizeof(backtrotmap)/(sizeof(int8_t)*8));
-      motion.aryPtr = *backtrotmap;
-      Serial.println("Backing Up - BEEP!");
+    //sanity check
+    if ((uSec[4] > lowerLimit) && (uSec[4] < upperLimit)) {
+      if (uSec[4] > forwardThreshold) { //forward throttle
+        motion.size = (sizeof(trotmap)/(sizeof(int8_t)*8));
+        motion.aryPtr = *trotmap;
+        speed=(numSpeeds - ((uSec[4] - forwardThreshold) / ((upperLimit - forwardThreshold)/numSpeeds)));
+        Serial.println("Moving Forward!");
+      } else if (uSec[4] < reverseThreshold) { //backward throttle
+        motion.size = (sizeof(backtrotmap)/(sizeof(int8_t)*8));
+        motion.aryPtr = *backtrotmap;
+        speed=((uSec[4] - lowerLimit) / ((reverseThreshold - lowerLimit)/numSpeeds));
+        Serial.println("Backing Up - BEEP!");
+      };
     };
 
-    if (uSec[2] > strafeRightThreshold) {
-      //motion.size = (sizeof(rightstrafemap)/(sizeof(int8_t)*8));
-      //motion.aryPtr = *rightstrafemap;
-      motion.size = (sizeof(rightrotatemap)/(sizeof(int8_t)*8));
-      motion.aryPtr = *rightrotatemap;
-      Serial.println("Strafe RIGHT");
-    } else if (uSec[2] < strafeLeftThreshold) {
-      //motion.size = (sizeof(leftstrafemap)/(sizeof(int8_t)*8));
-      //motion.aryPtr = *leftstrafemap;
-      motion.size = (sizeof(leftrotatemap)/(sizeof(int8_t)*8));
-      motion.aryPtr = *leftrotatemap;
-      Serial.println("Strafe LEFT");
+    if ((uSec[2] > lowerLimit) && (uSec[2] < upperLimit)) {
+      if (uSec[2] > strafeRightThreshold) {
+        motion.size = (sizeof(rightstrafemap)/(sizeof(int8_t)*8));
+        motion.aryPtr = *rightstrafemap;
+        speed=(numSpeeds - ((uSec[2] - strafeRightThreshold) / ((upperLimit - strafeRightThreshold)/numSpeeds)));
+        Serial.println("Strafe RIGHT");
+      } else if (uSec[2] < strafeLeftThreshold) {
+        motion.size = (sizeof(leftstrafemap)/(sizeof(int8_t)*8));
+        motion.aryPtr = *leftstrafemap;
+        speed=((uSec[2] - lowerLimit) / ((strafeLeftThreshold - lowerLimit)/numSpeeds));
+        Serial.println("Strafe LEFT");
+      };
     };
+
+    if ((uSec[5] > lowerLimit) && (uSec[5] < upperLimit)) {
+      if (uSec[5] > rotateRightThreshold) {
+        motion.size = (sizeof(rightrotatemap)/(sizeof(int8_t)*8));
+        motion.aryPtr = *rightrotatemap;
+        speed=(numSpeeds - ((uSec[5] - rotateRightThreshold) / ((upperLimit - rotateRightThreshold)/numSpeeds)));
+        Serial.println("Rotate RIGHT");
+      } else if (uSec[5] < rotateLeftThreshold) {
+        motion.size = (sizeof(leftrotatemap)/(sizeof(int8_t)*8));
+        motion.aryPtr = *leftrotatemap;
+        speed=((uSec[5] - lowerLimit) / ((rotateLeftThreshold - lowerLimit)/numSpeeds));
+        Serial.println("Rotate LEFT");
+      };
+    };
+
+    Serial.print("Speed: ");
+    Serial.println(speed);
 
     return motion;
   }
@@ -200,7 +229,7 @@ public:
     Serial.println(numSteps);
 
     //TODO: update delay to move slower instead of jerking
-    delay(minDelay+(walkSpeed * 50));
+    delay(minDelay+(speed * speedDelay));
 #ifdef SERVO_DEBUG
     Serial.print("Sending next set: ");
     Serial.print(step);
@@ -215,15 +244,17 @@ public:
     Serial.print("Num Steps: ");
     Serial.println(numSteps);
 #endif
-    send(legs[step]);
-    step++;
-    if (step > (numSteps-1)) {
-      step=0;
-    };
-    if (step%2 == 0) {
-      digitalWrite(led, HIGH);
-    } else {
-      digitalWrite(led, LOW);
+    if (speed < 7) {
+      send(legs[step]);
+      step++;
+      if (step > (numSteps-1)) {
+        step=0;
+      };
+      if (step%2 == 0) {
+        digitalWrite(led, HIGH);
+      } else {
+        digitalWrite(led, LOW);
+      }
     }
     return step;
   }
@@ -249,7 +280,6 @@ private:
 #ifdef SERVO_DEBUG
     Serial.println("");
 #endif
-    delay(minDelay+(walkSpeed * 50));
 #ifdef OPERATE_SERVOS
     pwmController.setChannelsPWM(0,8,sending);
 #endif
