@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include "PCA9685.h"
 
-//#define OPERATE_SERVOS 1
+#define OPERATE_SERVOS 1
 #define SERVO_DEBUG 1
 //#define RCV_DEBUG 1
 
@@ -19,6 +19,7 @@ struct aryPack {
     int8_t* aryPtr;
 };
 
+//Plagerized from: http://ceptimus.co.uk/?p=66 Thanks!
 ISR(PCINT2_vect) { // one or more of pins 2~7 have changed state
   //chans: 2:meh, 3: hovpit, 4: left stick horiz, 5: right stk vert, 6: throt, 7: right stk horiz
   uint32_t now = micros();
@@ -31,7 +32,7 @@ ISR(PCINT2_vect) { // one or more of pins 2~7 have changed state
         risingEdge[channel] = now;
       } else { // -ve edge so store pulse width
         //TODO: Maybe average this with it's previous value to even it out?
-        uSec[channel] = now - risingEdge[channel];
+        uSec[channel] = (((now - risingEdge[channel]) + uSec[channel])/2);
       }
     }
     channel++;
@@ -143,10 +144,11 @@ class Walk {
   int8_t maxPWMLimit=500;
   int8_t numSteps = 0;
 
-  uint16_t forwardThreshold = 2000;
-  uint16_t reverseThreshold = 1600;
-  uint16_t strafeLeftThreshold = 1600;
-  uint16_t strafeRightThreshold = 2000;
+  //chans: 2:meh, 3: hovpit, 4: left stick horiz, 5: right stk vert, 6: throt, 7: right stk horiz
+  uint16_t forwardThreshold = 1700;
+  uint16_t reverseThreshold = 1400;
+  uint16_t strafeLeftThreshold = 1400;
+  uint16_t strafeRightThreshold = 1700;
 
 public:
   aryPack selectMotion() {
@@ -168,12 +170,16 @@ public:
     };
 
     if (uSec[2] > strafeRightThreshold) {
-      motion.size = (sizeof(rightstrafemap)/(sizeof(int8_t)*8));
-      motion.aryPtr = *rightstrafemap;
+      //motion.size = (sizeof(rightstrafemap)/(sizeof(int8_t)*8));
+      //motion.aryPtr = *rightstrafemap;
+      motion.size = (sizeof(rightrotatemap)/(sizeof(int8_t)*8));
+      motion.aryPtr = *rightrotatemap;
       Serial.println("Strafe RIGHT");
     } else if (uSec[2] < strafeLeftThreshold) {
-      motion.size = (sizeof(leftstrafemap)/(sizeof(int8_t)*8));
-      motion.aryPtr = *leftstrafemap;
+      //motion.size = (sizeof(leftstrafemap)/(sizeof(int8_t)*8));
+      //motion.aryPtr = *leftstrafemap;
+      motion.size = (sizeof(leftrotatemap)/(sizeof(int8_t)*8));
+      motion.aryPtr = *leftrotatemap;
       Serial.println("Strafe LEFT");
     };
 
