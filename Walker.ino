@@ -65,73 +65,73 @@ void setup() {
 
   //servo direction {-    +    -   +   -    +   -    + }
 const int8_t trotmap[8][8] = {
-                  {-35, 20, -45, 20, -45, -45, 45, 45},
-                  {-35, 20, -45, 20, 45, 45, -45, -45},
-                  {0, 45, -20, 45, 45, 45, -45, -45},
-                  {0, 45, -20, 45, -45, -45, 45, 45},
-                  {-35, 20, -45, 20, -45, -45, 45, 45},
-                  {-35, 20, -45, 20, 45, 45, -45, -45},
-                  {0, 45, -20, 45, 45, 45, -45, -45},
-                  {0, 45, -20, 45, -45, -45, 45, 45}
+                  {-35, -10, -45,   0, -45, -45,  45,  45},
+                  {-35, -10, -45,   0,  45,  45, -45, -45},
+                  {  0,  45, -20,  45,  45,  45, -45, -45},
+                  {  0,  45, -20,  45, -45, -45,  45,  45},
+                  {-35, -10, -45,   0, -45, -45,  45,  45},
+                  {-35, -10, -45,   0,  45,  45, -45, -45},
+                  {  0,  45, -20,  45,  45,  45, -45, -45},
+                  {  0,  45, -20,  45, -45, -45,  45,  45}
                 };
 
 const int8_t backtrotmap[8][8] = {
-                  {0, 45, -20, 45, -45, -45, 45, 45},
-                  {0, 45, -20, 45, 45, 45, -45, -45},
-                  {-35, 20, -45, 20, 45, 45, -45, -45},
-                  {-35, 20, -45, 20, -45, -45, 45, 45},
-                  {0, 45, -20, 45, -45, -45, 45, 45},
-                  {0, 45, -20, 45, 45, 45, -45, -45},
-                  {-35, 20, -45, 20, 45, 45, -45, -45},
-                  {-35, 20, -45, 20, -45, -45, 45, 45}
+                  {  0,  45, -20,  45, -45, -45,  45,  45},
+                  {  0,  45, -20,  45,  45,  45, -45, -45},
+                  {-35, -10, -45,   0,  45,  45, -45, -45},
+                  {-35, -10, -45,   0, -45, -45,  45,  45},
+                  {  0,  45, -20,  45, -45, -45,  45,  45},
+                  {  0,  45, -20,  45,  45,  45, -45, -45},
+                  {-35, -10, -45,   0,  45,  45, -45, -45},
+                  {-35, -10, -45,   0, -45, -45,  45,  45}
                 };
 
 const int8_t rightstrafemap[8][8] = {
 //servo direction {-    +    -   +   -    +   -    + }
 //servo desig     {ft1, ft2, ft3, ft4, hp1, hp2, hp3, hp4}
-                  {-35, 20, -45, 20, -45, 45, 45, -45}, //fd,fu,sd,su
-                  {-35, 20, -45, 20, 45, -45, -45, 45},
-                  {0, 45, -20, 45, 45, -45, -45, 45},
-                  {0, 45, -20, 45, -45, 45, 45, -45},
-                  {-35, 20, -45, 20, -45, 45, 45, -45},
-                  {-35, 20, -45, 20, 45, -45, -45, 45},
-                  {0, 45, -20, 45, 45, -45, -45, 45},
-                  {0, 45, -20, 45, -45, 45, 45, -45}
+                  {-35, -10, -45,   0, -45,  45,  45, -45}, //fd,fu,sd,su
+                  {-35, -10, -45,   0,  45, -45, -45,  45},
+                  {  0,  45, -20,  45,  45, -45, -45,  45},
+                  {  0,  45, -20,  45, -45,  45,  45, -45},
+                  {-35, -10, -45,   0, -45,  45,  45, -45},
+                  {-35, -10, -45,   0,  45, -45, -45,  45},
+                  {  0,  45, -20,  45,  45, -45, -45,  45},
+                  {  0,  45, -20,  45, -45,  45,  45, -45}
                 };
 
 const int8_t leftstrafemap[8][8] = {
 //servo direction {-    +    -   +   -    +   -    + }
 //servo desig     {ft1, ft2, ft3, ft4, hp1, hp2, hp3, hp4}
-                  {0, 45, -20, 45, -45, 45, 45, -45},
-                  {0, 45, -20, 45, 45, -45, -45, 45},
-                  {-35, 20, -45, 20, 45, -45, -45, 45},
-                  {-35, 20, -45, 20, -45, 45, 45, -45},
-                  {0, 45, -20, 45, -45, 45, 45, -45},
-                  {0, 45, -20, 45, 45, -45, -45, 45},
-                  {-35, 20, -45, 20, 45, -45, -45, 45},
-                  {-35, 20, -45, 20, -45, 45, 45, -45}
+                  {  0,  45, -20,  45, -45,  45,  45, -45},
+                  {  0,  45, -20,  45,  45, -45, -45,  45},
+                  {-35, -10, -45,   0,  45, -45, -45,  45},
+                  {-35, -10, -45,   0, -45,  45,  45, -45},
+                  {  0,  45, -20,  45, -45,  45,  45, -45},
+                  {  0,  45, -20,  45,  45, -45, -45,  45},
+                  {-35, -10, -45,   0,  45, -45, -45,  45},
+                  {-35, -10, -45,   0, -45,  45,  45, -45}
                 };
 const int8_t leftrotatemap[6][8] = {
 //servo direction {-    +    -   +   -    +   -    + }
 //servo desig     {ft1, ft2, ft3, ft4, hp1, hp2, hp3, hp4}
                 //{-45, 20, -45, 20, -45, 45, 45, -45}, //fd,fu,sd,su
-                  {-35, 45, -45, 45, 45, 45, 45, 45},//plant
-                  {-35, 45, -45, 45, -45, -45, -45, -45}, //rotate
-                  {0, 45, -20, 45, -45, -45, -45, -45}, //pick up odds
-                  {0, 45, -20, 45, 45, -45, 45, -45}, //adjust odd
-                  {-35, 20, -45, 20, 45, -45, 45, -45}, //pick up evens
-                  {-35, 20, -45, 20, 45, 45, 45, 45}, //adjust even
+                  {-35,  45, -45,  45,  45,  45,  45,  45},//plant
+                  {-35,  45, -45,  45, -45, -45, -45, -45}, //rotate
+                  {  0,  45, -20,  45, -45, -45, -45, -45}, //pick up odds
+                  {  0,  45, -20,  45,  45, -45,  45, -45}, //adjust odd
+                  {-35, -10, -45,   0,  45, -45,  45, -45}, //pick up evens
+                  {-35, -10, -45,   0,  45,  45,  45,  45}, //adjust even
                 };
 const int8_t rightrotatemap[6][8] = {
 //servo direction {-    +    -   +   -    +   -    + }
 //servo desig     {ft1, ft2, ft3, ft4, hp1, hp2, hp3, hp4}
                 //{-45, 20, -45, 20, -45, 45, 45, -45}, //fd,fu,sd,su
-                  {-35, 45, -45, 45, -45, -45, -45, -45},//plant
-                  {-35, 45, -45, 45, 45, 45, 45, 45}, //rotate
-                  {0, 45, -20, 45, 45, 45, 45, 45}, //pick up odds
-                  {0, 45, -20, 45, -45, 45, -45, 45}, //adjust odd
-                  {-35, 20, -45, 20, -45, 45, -45, 45}, //pick up evens
-                  {-35, 20, -45, 20, -45, -45, -45, -45}, //adjust even
+                  {-35,  45, -45,  45, -45, -45, -45, -45},//plant
+                  {-35,  45, -45,  45,  45,  45,  45,  45}, //rotate
+                  {  0,  45, -20,  45,  45,  45,  45,  45}, //pick up odds
+                  {  0,  45, -20,  45, -45,  45, -45,  45}, //adjust odd
+                  {-35, -10, -45,   0, -45,  45, -45,  45}, //pick up evens
+                  {-35, -10, -45,   0, -45, -45, -45, -45}, //adjust even
                 };
 
 //LIMITS!! 102-500
@@ -166,45 +166,46 @@ public:
       return motion;
     }
 
+  //chans: 2:meh, 3: hovpit, 4: left stick horiz, 5: right stk vert, 6: throt, 7: right stk horiz
     //sanity check
-    if ((uSec[4] > lowerLimit) && (uSec[4] < upperLimit)) {
-      if (uSec[4] > forwardThreshold) { //forward throttle
-        motion.size = (sizeof(trotmap)/(sizeof(int8_t)*8));
-        motion.aryPtr = *trotmap;
-        speed=(numSpeeds - ((uSec[4] - forwardThreshold) / ((upperLimit - forwardThreshold)/numSpeeds)));
-        Serial.println("Moving Forward!");
-      } else if (uSec[4] < reverseThreshold) { //backward throttle
+    if ((uSec[3] > lowerLimit) && (uSec[3] < upperLimit)) {
+      if (uSec[3] > forwardThreshold) { //forward throttle
         motion.size = (sizeof(backtrotmap)/(sizeof(int8_t)*8));
         motion.aryPtr = *backtrotmap;
-        speed=((uSec[4] - lowerLimit) / ((reverseThreshold - lowerLimit)/numSpeeds));
+        speed=(numSpeeds - ((uSec[3] - forwardThreshold) / ((upperLimit - forwardThreshold)/numSpeeds)));
         Serial.println("Backing Up - BEEP!");
-      };
-    };
-
-    if ((uSec[2] > lowerLimit) && (uSec[2] < upperLimit)) {
-      if (uSec[2] > strafeRightThreshold) {
-        motion.size = (sizeof(rightstrafemap)/(sizeof(int8_t)*8));
-        motion.aryPtr = *rightstrafemap;
-        speed=(numSpeeds - ((uSec[2] - strafeRightThreshold) / ((upperLimit - strafeRightThreshold)/numSpeeds)));
-        Serial.println("Strafe RIGHT");
-      } else if (uSec[2] < strafeLeftThreshold) {
-        motion.size = (sizeof(leftstrafemap)/(sizeof(int8_t)*8));
-        motion.aryPtr = *leftstrafemap;
-        speed=((uSec[2] - lowerLimit) / ((strafeLeftThreshold - lowerLimit)/numSpeeds));
-        Serial.println("Strafe LEFT");
+      } else if (uSec[3] < reverseThreshold) { //backward throttle
+        motion.size = (sizeof(trotmap)/(sizeof(int8_t)*8));
+        motion.aryPtr = *trotmap;
+        speed=((uSec[3] - lowerLimit) / ((reverseThreshold - lowerLimit)/numSpeeds));
+        Serial.println("Moving Forward!");
       };
     };
 
     if ((uSec[5] > lowerLimit) && (uSec[5] < upperLimit)) {
-      if (uSec[5] > rotateRightThreshold) {
+      if (uSec[5] > strafeRightThreshold) {
+        motion.size = (sizeof(rightstrafemap)/(sizeof(int8_t)*8));
+        motion.aryPtr = *rightstrafemap;
+        speed=(numSpeeds - ((uSec[5] - strafeRightThreshold) / ((upperLimit - strafeRightThreshold)/numSpeeds)));
+        Serial.println("Strafe RIGHT");
+      } else if (uSec[5] < strafeLeftThreshold) {
+        motion.size = (sizeof(leftstrafemap)/(sizeof(int8_t)*8));
+        motion.aryPtr = *leftstrafemap;
+        speed=((uSec[5] - lowerLimit) / ((strafeLeftThreshold - lowerLimit)/numSpeeds));
+        Serial.println("Strafe LEFT");
+      };
+    };
+
+    if ((uSec[2] > lowerLimit) && (uSec[2] < upperLimit)) {
+      if (uSec[2] > rotateRightThreshold) {
         motion.size = (sizeof(rightrotatemap)/(sizeof(int8_t)*8));
         motion.aryPtr = *rightrotatemap;
-        speed=(numSpeeds - ((uSec[5] - rotateRightThreshold) / ((upperLimit - rotateRightThreshold)/numSpeeds)));
+        speed=(numSpeeds - ((uSec[2] - rotateRightThreshold) / ((upperLimit - rotateRightThreshold)/numSpeeds)));
         Serial.println("Rotate RIGHT");
-      } else if (uSec[5] < rotateLeftThreshold) {
+      } else if (uSec[2] < rotateLeftThreshold) {
         motion.size = (sizeof(leftrotatemap)/(sizeof(int8_t)*8));
         motion.aryPtr = *leftrotatemap;
-        speed=((uSec[5] - lowerLimit) / ((rotateLeftThreshold - lowerLimit)/numSpeeds));
+        speed=((uSec[2] - lowerLimit) / ((rotateLeftThreshold - lowerLimit)/numSpeeds));
         Serial.println("Rotate LEFT");
       };
     };
